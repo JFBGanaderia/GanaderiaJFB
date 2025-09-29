@@ -94,6 +94,45 @@ function normalizaTipo(tipo = '') {
   return MAP_TIPOS[t] || tipo;
 }
 
+// Ejecutar migraciones al arranque (útil en Render)
+(async () => {
+  try {
+    await knex.migrate.latest();
+    console.log("✅ Migraciones al día");
+  } catch (e) {
+    console.error("❌ Error corriendo migraciones:", e);
+  }
+})();
+
+(async () => {
+  try {
+    const row = await knex("usuarios").count({ c: "id" }).first();
+    const count = Number(row?.c ?? 0);
+    if (count === 0) {
+      const hash = await bcrypt.hash("admin123", 10);
+      await knex("usuarios").insert({
+        nombre: "Admin Demo",
+        email: "admin@demo.com",
+        password: hash,
+        rol: "propietario",
+      });
+      console.log("🌱 Usuario demo creado: admin@demo.com / admin123");
+    }
+  } catch (e) {
+    console.error("❌ Error seed usuario demo:", e);
+  }
+})();
+
+(async () => {
+  try {
+    await knex.migrate.latest();
+    console.log("✅ Migraciones al día");
+  } catch (e) {
+    console.error("❌ Error corriendo migraciones:", e);
+  }
+})();
+
+
 // ================== Rutas de AUTH ==================
 
 // LOGIN (añadido)
