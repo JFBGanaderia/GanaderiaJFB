@@ -604,15 +604,15 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
   }
 });
 
-// ================== Salud ==================
+// ================== Healthcheck ==================
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, time: new Date().toISOString() });
+  res.json({
+    ok: true,
+    mensaje: 'Servidor funcionando en Render 🚀',
+    time: new Date().toISOString()
+  });
 });
 
-// ================== Ruta de prueba (healthcheck) ==================
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true, mensaje: 'Servidor funcionando en Render 🚀' });
-});
 
 // ================== Iniciar Servidor ==================
 const server = http.createServer(app);
