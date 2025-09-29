@@ -1,0 +1,17 @@
+# Ignorar la carpeta de dependencias
+node_modules/
+
+# Ignorar archivos de variables de entorno
+.env
+# Ignorar archivos de video grandes
+assets/background-video.mp4assets/*.mp4 
+assets/*.mp4 
+node_modules/
+.env
+.env.local
+dist/
+build/
+*.log
+assets/*.mp4
+assets/*.mov
+assets/*.zip

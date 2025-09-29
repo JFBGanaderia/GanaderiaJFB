@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Veterinario | JFB Ganadería</title>
+
+  <!-- RUTA CORRECTA al CSS dentro de /cliente -->
+  <link rel="stylesheet" href="./css/estilos.css" />
+</head>
+<body>
+
+  <!-- Fondo animado (usa estilos globales existentes) -->
+  <div class="background-wrapper">
+    <div class="particles p1"></div>
+    <div class="particles p2"></div>
+    <div class="particles p3"></div>
+  </div>
+
+  <header class="main-header">
+    <div class="header-logo">
+      <!-- Usa el logo servido por el backend para evitar duplicados -->
+      <img src="/assets/logo.png" alt="Logo JFB" />
+      <span>JFB Ganadería Inteligente</span>
+    </div>
+    <nav class="header-nav">
+      <a href="./index.html" class="btn">🏠 Inicio</a>
+      <button id="cerrar-sesion-mvz" class="btn">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- Acceso a rancho por código -->
+    <section class="dashboard-panel">
+      <h2>Acceder a un Rancho Existente</h2>
+      <form id="form-buscar-rancho" autocomplete="off">
+        <div class="form-group">
+          <label for="codigo-acceso">Introduce el Código de Acceso del Rancho:</label>
+          <input type="text" id="codigo-acceso" placeholder="Ej. a1b2c3" required />
+        </div>
+        <button type="submit" class="btn">Acceder al Rancho</button>
+      </form>
+      <!-- (Opcional) contenedor para mostrar resultados/errores -->
+      <div id="mvz-rancho-feedback" class="rancho-item-placeholder hidden"></div>
+    </section>
+
+    <!-- Acciones disponibles -->
+    <section class="dashboard-panel">
+      <h2>Iniciar Nueva Actividad</h2>
+      <ul class="action-list">
+        <!-- Enlazado a la misma vista de procedimiento con ?tipo=...
+             (coincide con tu back y con defs/procedimientos-config) -->
+        <li><a href="./procedimiento.html?tipo=palpacion"      class="action-link"><span>🐄 Palpación</span></a></li>
+        <li><a href="./procedimiento.html?tipo=inseminacion"   class="action-link"><span>💉 Inseminación</span></a></li>
+        <li><a href="./procedimiento.html?tipo=transferencia"  class="action-link"><span>🐣 Transferencia de Embrión</span></a></li>
+        <li><a href="./procedimiento.html?tipo=sincronizacion" class="action-link"><span>🔄 Sincronización</span></a></li>
+        <li><a href="./procedimiento.html?tipo=medicamento"    class="action-link"><span>💊 Aplicación de Medicamento</span></a></li>
+      </ul>
+      <p style="margin-top: 16px" class="mini-note">JFB Ganadería Inteligente © 2025</p>
+    </section>
+  </main>
+
+  <!-- Tu lógica -->
+  <script src="./mvz.js"></script>
+</body>
+</html>

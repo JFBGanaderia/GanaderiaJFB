@@ -1,0 +1,442 @@
+/* =================================================
+   SISTEMA DE DISEÑO UNIFICADO JFB — estilos.css
+   (Reemplaza tu archivo completo por este)
+   ================================================= */
+
+/* Fuente que ya usas */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* -----------------------------
+   Variables Globales y Reset
+------------------------------*/
+:root {
+  --bg-1: #0b1220;
+  --grad-1: #0e1b2e;
+  --grad-2: #081323;
+  --accent: #2ee6ff;
+  --accent-2: #6aa8ff;
+  --text: #e9f1ff;
+  --muted: #9fb3c8;
+  --card-border: #2a3e5a;
+  --ring: rgba(102, 210, 255, 0.5);
+  --radius: 22px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 800px at 80% -10%, #0f2a48 0%, transparent 60%),
+    radial-gradient(900px 700px at -10% 110%, #101b31 0%, transparent 55%),
+    linear-gradient(180deg, var(--grad-1), var(--grad-2));
+}
+
+/* -----------------------------
+   Fondo Animado
+------------------------------*/
+.background-wrapper {
+  position: fixed; inset: 0; z-index: -1;
+  overflow: hidden; pointer-events: none;
+}
+.particles {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  filter: blur(70px); opacity: .35; mix-blend-mode: screen;
+  animation: floaty 16s ease-in-out infinite;
+}
+.p1 { background: radial-gradient(circle at 30% 30%, #1aa8ff, transparent 60%); left: -10%; top: -10%; }
+.p2 { background: radial-gradient(circle at 60% 40%, #5a7bff, transparent 65%); right: -15%; top: 10%; animation-delay: -5s; }
+.p3 { background: radial-gradient(circle at 40% 60%, #16db93, transparent 65%); left: 10%; bottom: -15%; animation-delay: -10s; }
+@keyframes floaty{
+  0%,100%{ transform: translateY(0) translateX(0) scale(1); }
+  50%{ transform: translateY(-20px) translateX(10px) scale(1.03); }
+}
+
+/* -----------------------------
+   Contenedores Centrados
+------------------------------*/
+.container-centered{
+  display:flex; justify-content:center; align-items:center;
+  min-height:100vh; padding:20px;
+  /* offset por header sticky */
+  padding-top: 80px;
+}
+.main-card{
+  position:relative; z-index:1; text-align:center;
+  padding:40px;
+  background: rgba(15,31,52,.8);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  border:1px solid var(--card-border);
+}
+.logo{
+  max-width:180px; height:auto; margin-bottom:25px;
+  filter: drop-shadow(0 0 15px var(--accent));
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+@keyframes pulse-glow{
+  0%,100%{ filter: drop-shadow(0 0 15px var(--accent)); }
+  50%{ filter: drop-shadow(0 0 30px var(--accent-2)); }
+}
+
+/* =================================================
+   Header (sticky)
+================================================= */
+.main-header{
+  position: sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 24px;
+  background: rgba(11,18,32,.7);
+  backdrop-filter: blur(12px);
+  border-bottom:1px solid var(--card-border);
+}
+.header-logo{ display:flex; align-items:center; gap:12px; font-weight:600; }
+.header-logo img{ height:32px; width:auto; }
+.header-nav{ display:flex; gap:12px; }
+
+/* Botones del header */
+.btn-ghost,
+.boton-logout{
+  all: unset;
+  display:inline-flex; align-items:center; justify-content:center;
+  height:44px; padding:0 16px; border-radius:14px;
+  font-weight:600; cursor:pointer; user-select:none;
+  background: linear-gradient(180deg, #1b3458, #172a47);
+  color: var(--text);
+  border:1px solid #2a4365;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+  transition: transform .15s ease, box-shadow .15s ease, border .15s ease;
+}
+.btn-ghost:hover,
+.boton-logout:hover{
+  transform: translateY(-2px);
+  border-color:#3a5b86;
+  box-shadow: 0 12px 26px rgba(0,0,0,.45), 0 0 0 4px var(--ring);
+}
+
+/* =================================================
+   Layout del Dashboard
+================================================= */
+.dashboard-container{
+  max-width: 800px;
+  margin: 32px auto;
+  padding: 80px 20px 40px 20px;  /* offset superior por header */
+  display:flex; flex-direction:column; gap:22px;
+}
+.dashboard-panel{
+  background: linear-gradient(180deg, rgba(21,34,56,.85), rgba(12,24,44,.85));
+  border:1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding:24px; width:100%;
+}
+
+/* Si alguna vista usa grid con main/sidebar */
+.main-content{ grid-column: span 12; }
+.sidebar{ grid-column: span 12; }
+@media (min-width: 900px){
+  .main-content{ grid-column: span 8; }
+  .sidebar{ grid-column: span 4; }
+}
+
+/* =================================================
+   Tipografía y texto
+================================================= */
+h1, h2{
+  margin:0 0 14px 0; line-height:1.15;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip:text; color:transparent;
+}
+h1{ font-size: clamp(22px, 3.2vw, 28px); }
+h2{ font-size: clamp(20px, 2.8vw, 24px); }
+p{ color:var(--muted); margin-top:0; }
+
+/* =================================================
+   Botones
+================================================= */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:10px; padding:12px 24px;
+  border-radius:16px;
+  background: linear-gradient(180deg, #1b3458, #172a47);
+  color: var(--text);
+  border:1px solid #2a4365;
+  text-decoration:none; font-weight:600; font-size:1em; font-family:inherit;
+  cursor:pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+  transition: all .15s ease;
+}
+.btn:hover{
+  transform: translateY(-2px);
+  border-color:#3a5b86;
+  box-shadow: 0 12px 26px rgba(0,0,0,.45), 0 0 0 4px var(--ring);
+}
+.btn:active{ transform: translateY(0); }
+.btn[aria-disabled="true"], .btn:disabled{
+  opacity:.6; cursor:not-allowed; transform:none;
+  box-shadow:none;
+}
+
+/* =================================================
+   Formularios y Tabs (Auth)
+================================================= */
+.tabs-container{
+  display:flex; justify-content:center; margin-bottom:30px;
+  border-bottom:1px solid var(--card-border);
+}
+.tab{
+  background:none; border:none; color:var(--muted);
+  padding:15px 25px; cursor:pointer; font-size:1.1em; font-family:inherit;
+  transition: all .3s ease; border-bottom:3px solid transparent; transform: translateY(1px);
+}
+.tab:hover{ color:var(--text); }
+.tab.active{ color:var(--text); border-bottom-color: var(--accent); }
+
+form{ margin-top:8px; display:flex; flex-direction:column; gap:16px; }
+.form-group{ display:flex; flex-direction:column; gap:8px; text-align:left; }
+label{ color:var(--muted); font-size:.95rem; }
+
+input[type="text"],
+input[type="email"],
+input[type="password"]{
+  width:100%; height:48px; padding:0 14px; border-radius:14px;
+  border:1px solid #2a425f; background:#0c1b30; color:var(--text);
+  outline:none; font-family:inherit; font-size:1em;
+  transition: all .15s ease;
+  -webkit-appearance: none; appearance: none; outline-offset: 2px;
+}
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder{ color:#7d95af; }
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus{ border-color:#3d5f86; background:#0f2038; }
+input[type="text"]:focus-visible,
+input[type="email"]:focus-visible,
+input[type="password"]:focus-visible{
+  border-color:#3d5f86; box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* =================================================
+   Lista de Acciones (MVZ)
+================================================= */
+.action-list{
+  list-style:none; padding:0; margin:12px 0 0 0;
+  display:grid; gap:12px;
+}
+.action-link{
+  display:flex; justify-content:space-between; align-items:center;
+  width:100%; padding:12px 18px; border-radius:16px;
+  background: linear-gradient(180deg, #1b3458, #172a47);
+  color:var(--text); border:1px solid #2a4365; text-decoration:none;
+  font-weight:600;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+  transition: all .15s ease;
+}
+.action-link:hover{
+  transform: translateY(-2px);
+  border-color:#3a5b86;
+  box-shadow: 0 12px 26px rgba(0,0,0,.45), 0 0 0 4px var(--ring);
+}
+.action-link::after{
+  content:"→"; opacity:.7;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.action-link:hover::after{ transform: translateX(3px); opacity:1; }
+
+@media (max-width: 520px){
+  .action-list{ gap:10px; }
+  .action-link{ padding:12px 16px; }
+}
+
+/* =================================================
+   Tarjetas heredadas (.card) para vistas legacy
+================================================= */
+.card{
+  background: linear-gradient(180deg, rgba(21,34,56,.85), rgba(12,24,44,.85));
+  border:1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding:22px; color:var(--text);
+}
+.card h1, .card h2{
+  margin:0 0 12px 0; line-height:1.15;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+/* Si usas botones nativos dentro de .card */
+.card button{
+  all:unset; display:inline-flex; align-items:center; justify-content:center;
+  padding:12px 24px; border-radius:16px;
+  background: linear-gradient(180deg, #1b3458, #172a47);
+  color: var(--text); border:1px solid #2a4365; font-weight:600; cursor:pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+  transition: all .15s ease;
+}
+.card button:hover{
+  transform: translateY(-2px);
+  border-color:#3a5b86;
+  box-shadow: 0 12px 26px rgba(0,0,0,.45), 0 0 0 4px var(--ring);
+}
+
+/* =================================================
+   Lista de Ranchos (propietario/MVZ)
+================================================= */
+.rancho-list{
+  margin-top:20px; display:flex; flex-direction:column; gap:10px;
+}
+.rancho-item{
+  display:block; padding:15px;
+  background: rgba(0,0,0,.2);
+  border:1px solid var(--card-border);
+  border-radius:12px; text-decoration:none; color:var(--text);
+  transition: all .2s ease;
+}
+.rancho-item:hover{
+  cursor:pointer; border-color: var(--accent);
+  background: rgba(46,230,255,.1);
+}
+.rancho-item-placeholder{
+  padding:15px; border:1px dashed var(--card-border);
+  border-radius:12px; color:var(--muted); text-align:center;
+}
+
+/* =================================================
+   Utilidades
+================================================= */
+.hidden{ display:none !important; }
+
+/* ====== Layout del formulario de procedimiento ====== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.campo.full { grid-column: 1 / -1; }
+.campo.center { align-items: center; }
+.campo textarea { min-height: 90px; }
+
+/* Alias para que welcome-button luzca como .btn sin tocar el HTML */
+.welcome-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #1b3458, #172a47);
+  color: var(--text);
+  border: 1px solid #2a4365;
+  text-decoration: none;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: all 0.15s ease;
+  width: 100%;
+}
+.welcome-button:hover {
+  transform: translateY(-2px);
+  border-color: #3a5b86;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.45), 0 0 0 4px var(--ring);
+}
+
+/* ====== Inputs uniformes (igual que SINIIGA) ====== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+select,
+textarea {
+  width: 100%;
+  height: 48px;                 /* textarea lo anulamos abajo */
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid #2a425f;
+  background: #0c1b30;          /* mismo fondo que SINIIGA */
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+  font-size: 1em;
+  transition: all 0.15s ease;
+}
+
+textarea {
+  min-height: 110px;            /* altura cómoda */
+  padding: 12px 14px;           /* textarea sí lleva padding vertical */
+  resize: vertical;             /* permite redimensionar si hace falta */
+}
+
+/* Enfoque/activo */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #3d5f86;
+  box-shadow: 0 0 0 4px var(--ring);
+  background: #0f2038;
+}
+
+/* Placeholder */
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: .7;
+}
+
+/* ====== Select con flecha personalizada ====== */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 38px; /* espacio para la flecha */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 6 5-6' stroke='%23a8d1ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px 20px;
+}
+
+/* ====== Checkbox a tono ====== */
+.campo-checkbox { display:flex; align-items:center; gap:10px; }
+.campo-checkbox input[type="checkbox"] {
+  width: 18px; height: 18px;
+  /* Soporte moderno: pinta el check con el color del tema */
+  accent-color: #2ee6ff;
+}
+
+/* ====== Deshabilitados / solo lectura ====== */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+/* ====== Grid del formulario (por si falta) ====== */
+.form-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
+@media (max-width: 720px){ .form-grid { grid-template-columns: 1fr; } }
+.campo { display:flex; flex-direction:column; gap:6px; }
+.campo.full { grid-column: 1 / -1; }
+
+/* Alinear checkbox y etiqueta en una fila compacta */
+.campo-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Tamaño y color acorde al tema */
+.campo-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #2ee6ff; /* color del tema */
+  margin: 0;             /* quita separaciones raras del navegador */
+  vertical-align: middle;
+}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel MVZ - Ganadería JFB</title>
+
+  <!-- Usa ruta relativa porque el server sirve /cliente como raíz -->
+  <link rel="stylesheet" href= "../css/estilos.css" />
+
+  <!-- (Opcional) tu lógica previa del panel -->
+  <script defer src="./mvz.js"></script>
+</head>
+<body>
+  <header class="main-header">
+    <h1>Panel de Veterinario (MVZ)</h1>
+    <div style="display:flex; gap:10px;">
+      <button id="btn-home" class="btn-ghost" onclick="location.href='index.html'">Inicio</button>
+      <button id="boton-logout" class="boton-logout"
+            <button id="boton-logout" class="boton-logout">Cerrar Sesión</button> 
+    </div>
+  </header>
+
+  <!-- Banner de rancho (se muestra SOLO si ya se accedió) -->
+  <section id="banner-rancho" class="card" style="display:none;">
+    <h2 id="banner-titulo">Accediste al: <span id="banner-rancho-nombre"></span></h2>
+    <p>Ahora puedes seleccionar una actividad del menú de abajo.</p>
+  </section>
+
+  <!-- Acceso a rancho por código (se oculta si ya hay rancho) -->
+  <section id="acceso-rancho" class="card">
+    <h2>Acceder a un Rancho Existente</h2>
+    <label for="codigo-acceso">Introduce el Código de Acceso:</label>
+    <input id="codigo-acceso" type="text" placeholder="Ej. a1b2c3" />
+    <button id="btn-buscar-rancho">Buscar Rancho</button>
+  </section>
+
+  <!-- Actividades -->
+  <section class="card">
+    <h2>Iniciar Nueva Actividad</h2>
+
+    <!--
+      IMPORTANTE:
+      - Usamos <a href="./procedimiento?tipo=..."> para que funcione con/ sin .html
+      - Los valores de ?tipo NO llevan acentos ni espacios:
+        palpacion | inseminacion | transferencia | sincronizacion | medicamento
+    -->
+    <body>
+    <div class="background-wrapper">
+        <div class="particles p1"></div>
+        <div class="particles p2"></div>
+        <div class="particles p3"></div>
+    </div>
+
+    <div class="dashboard-container">
+
+        <div class="sidebar">
+            <div class="dashboard-panel">
+                <h1>Panel de Veterinario (MVZ)</h1>
+                <p>Gestiona tus ranchos y actividades desde aquí.</p>
+                <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
+                    <a href="./index.html" class="btn">🏠 Inicio</a>
+                    <button id="cerrar-sesion-mvz" class="btn">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            
+            <div id="panel-buscar-rancho" class="dashboard-panel">
+                <h2>Acceder a un Rancho Existente</h2>
+                <form id="form-buscar-rancho">
+                    <div class="form-group">
+                        <label for="codigo-acceso">Introduce el Código de Acceso:</label>
+                        <input type="text" id="codigo-acceso" placeholder="Ej. a1b2c3" required>
+                    </div>
+                    <button type="submit" class="btn">Buscar Rancho</button>
+                </form>
+            </div>
+            
+            <div id="panel-rancho-activo" class="dashboard-panel hidden">
+                <h2>Accediste al Rancho:</h2>
+                <p id="nombre-rancho-activo" style="font-size: 1.2em; color: var(--accent);"></p>
+                <button id="cambiar-rancho" class="btn" style="margin-top: 15px;">Cambiar de Rancho</button>
+            </div>
+
+            <div id="panel-actividades" class="dashboard-panel hidden" style="margin-top: 22px;">
+                <h2>Iniciar Nueva Аctividad</h2>
+                <div class="action-list">
+                    <a href="./procedimiento-palpacion.html" class="action-link"><span>🐄 Palpación</span></a>
+                    <a href="./procedimiento-inseminacion.html" class="action-link"><span>💉 Inseminación</span></a>
+                    <a href="./procedimiento-transferencia.html" class="action-link"><span>🐣 Transferencia de Embrión</span></a>
+                    <a href="./procedimiento-medicamento.html" class="action-link"><span>💊 Aplicación de Medicamento</span></a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="./mvz.js"></script>
+</body>
+</body>
+</html>

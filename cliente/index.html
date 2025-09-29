@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienvenido a JFB Ganadería Inteligente</title>
+
+  <!-- Favicon y estilos base de la app -->
+  <link rel="icon" href="/assets/favicon.ico" />
+  <link rel="stylesheet" href="./css/estilos.css" />
+
+  <!-- Fuente para la landing (ligera) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+
+  <!-- Estilos ESPECÍFICOS de la landing (scoped con .landing-*) -->
+  <style>
+    /* ===== Diseño de landing con cielo estrellado (aislado) ===== */
+    body.landing-body{
+      margin:0;
+      font-family:'Poppins',ui-sans-serif,system-ui,-apple-system,sans-serif;
+      background-color:#0a0a14; /* azul casi negro */
+      color:#fff;
+      overflow:hidden;           /* evita scroll por animaciones */
+      display:flex; justify-content:center; align-items:center;
+      min-height:100vh;
+    }
+
+    .landing-bg{
+      position:fixed; inset:0; z-index:0;
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    }
+
+    /* Estrellas */
+    @keyframes landing-move{
+      from{ transform: translateY(0); }
+      to  { transform: translateY(-2000px); }
+    }
+    .landing-star{
+      position:absolute; width:1px; height:1px; border-radius:50%;
+      background:#fff; animation:landing-move 60s linear infinite;
+    }
+    .landing-s1{ box-shadow:0 0 10px 0 #fff; top:30%; left:25%; animation-duration:50s; }
+    .landing-s2{ box-shadow:0 0 10px 1px #fff; top:70%; left:70%; animation-duration:40s; }
+    .landing-s3{ box-shadow:0 0 5px  0 #fff; top:10%; left:90%; animation-duration:70s; }
+    .landing-s4{ box-shadow:0 0 8px  0 #fff; top:50%; left:10%; animation-duration:35s; }
+    .landing-s5{ box-shadow:0 0 12px 1px #fff; top:80%; left:45%; animation-duration:65s; }
+
+    /* Tarjeta central */
+    .landing-card{
+      position:relative; z-index:1; text-align:center;
+      padding:28px 24px;
+      background: rgba(10,10,20,.25);
+      backdrop-filter: blur(6px);
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.08);
+      max-width:720px; width: calc(100% - 32px);
+    }
+
+    /* Logo con brillo */
+    .landing-logo{
+      max-width:180px; height:auto; margin-bottom:18px;
+      filter: drop-shadow(0 0 15px rgba(0,191,255,.7));
+      animation: landing-pulse 3s ease-in-out infinite;
+    }
+    @keyframes landing-pulse{
+      0%,100%{ filter: drop-shadow(0 0 15px rgba(0,191,255,.7)); }
+      50%    { filter: drop-shadow(0 0 30px rgba(0,255,255,1)); }
+    }
+
+    /* Título con degradado */
+    .landing-title{
+      font-size: clamp(24px, 4.5vw, 40px);
+      margin: 4px 0 8px 0;
+      font-weight: 600;
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      -webkit-background-clip: text; background-clip:text; color:transparent;
+      line-height:1.15;
+    }
+
+    .landing-sub{
+      font-size: clamp(14px, 1.9vw, 18px);
+      color:#a7a7a7; margin: 0 auto 24px auto;
+      font-weight:300; max-width:520px;
+    }
+
+    /* Botones futuristas */
+    .landing-actions{
+      display:flex; justify-content:center; gap:16px; flex-wrap:wrap;
+    }
+    .landing-btn{
+      display:inline-block; position:relative; overflow:hidden;
+      padding:14px 28px; border-radius:50px; border:2px solid #00f2fe;
+      color:#fff; text-decoration:none; font-weight:400; letter-spacing:.2px;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, color .25s ease;
+      will-change: transform;
+    }
+    .landing-btn::before{
+      content:''; position:absolute; inset:0; left:-100%;
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      transition:left .35s ease; z-index:-1;
+    }
+    .landing-btn:hover::before{ left:0; }
+    .landing-btn:hover{
+      color:#0a0a14; border-color:transparent; transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,242,254,.2);
+    }
+
+    /* Pequeño pie */
+    .landing-foot{
+      margin-top:18px; color:#8aa3bf; font-size:12px;
+      opacity:.9;
+    }
+  </style>
+</head>
+
+<!-- Nota: clase landing-body para no afectar otras páginas -->
+<body class="landing-body">
+
+  <!-- Fondo estrellado -->
+  <div class="landing-bg">
+    <div class="landing-star landing-s1"></div>
+    <div class="landing-star landing-s2"></div>
+    <div class="landing-star landing-s3"></div>
+    <div class="landing-star landing-s4"></div>
+    <div class="landing-star landing-s5"></div>
+  </div>
+
+  <!-- Contenido -->
+  <main class="landing-card">
+    <!-- Usa el logo servido por el backend -->
+    <img src="/assets/logo.png" alt="Logo JFB Ganadería Inteligente" class="landing-logo" />
+
+    <h1 class="landing-title">El Futuro de la Ganadería</h1>
+    <p class="landing-sub">
+      Innovación para tu ganado, control total en tus manos. Selecciona tu perfil para comenzar.
+    </p>
+
+    <div class="landing-actions">
+      <!-- Enlaza a tu pantalla de autenticación con rol sugerido -->
+      <a class="landing-btn" href="./auth.html?rol=mvz">Soy Veterinario (MVZ)</a>
+      <a class="landing-btn" href="./auth.html?rol=propietario">Soy Propietario</a>
+    </div>
+
+    <div class="landing-foot">JFB Ganadería Inteligente © 2025</div>
+  </main>
+
+  <!-- (Opcional) Si quieres enviar directo a dashboards cuando ya hay token -->
+  <script>
+    (function(){
+      try{
+        const token = localStorage.getItem('token');
+        const rol   = localStorage.getItem('rol'); // si lo guardas en login
+        if(token && rol){
+          if(rol === 'mvz')       location.href = './mvz-dashboard.html';
+          else if(rol === 'propietario') location.href = './propietario-dashboard.html';
+        }
+      }catch(e){}
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Añadir Vaca — Ganadería JFB</title>
+  <link rel="stylesheet" href="../css/estilos.css" />
+</head>
+<body>
+
+  <div class="background-wrapper">
+    <div class="particles p1"></div>
+    <div class="particles p2"></div>
+    <div class="particles p3"></div>
+  </div>
+
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/assets/logo.png" alt="Logo JFB" />
+      <span>Añadir Nueva Vaca</span>
+    </div>
+    <nav class="header-nav">
+      <a href="./propietario-vacas.html" class="btn">← Volver a la lista</a>
+      <button id="boton-logout" class="btn">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <div class="dashboard-panel">
+      <h2>Datos del Animal</h2>
+      <p>Rellena la información de la nueva vaca. El número SINIIGA es obligatorio.</p>
+
+      <div id="feedback-message" class="hidden"
+           style="margin:16px 0;padding:12px;border-radius:12px;border:1px solid transparent;"></div>
+
+      <form id="form-nueva-vaca" class="form-grid">
+        <div class="campo">
+          <label for="nueva-numero">Número SINIIGA:</label>
+          <input type="text" id="nueva-numero" required />
+        </div>
+        <div class="campo">
+          <label for="nueva-nombre">Nombre:</label>
+          <input type="text" id="nueva-nombre" required />
+        </div>
+        <div class="campo">
+          <label for="nueva-numero-pierna">Número de Pierna (Ej: 234/2):</label>
+          <input type="text" id="nueva-numero-pierna" />
+        </div>
+        <div class="campo">
+          <label for="nueva-raza">Raza:</label>
+          <input type="text" id="nueva-raza" />
+        </div>
+        <div class="campo">
+          <label for="nueva-status">Status:</label>
+          <input type="text" id="nueva-status" />
+        </div>
+
+        <div class="campo full center" style="margin-top:6px">
+          <button id="btn-guardar" type="submit" class="welcome-button">Guardar Vaca</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // ------ Guardia de sesión y logout ------
+    const token = localStorage.getItem('token');
+    const rol   = localStorage.getItem('rol');
+    if (!token) location.href = './index.html';
+
+    document.getElementById('boton-logout')?.addEventListener('click', () => {
+      localStorage.clear(); sessionStorage.clear(); location.href = './index.html';
+    });
+
+    // ------ Feedback helper ------
+    function feedback(msg, type='info') {
+      const el = document.getElementById('feedback-message');
+      if (!el) return alert(msg);
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.borderColor   = type==='ok' ? 'rgba(34,197,94,.4)' : type==='warn' ? 'rgba(245,158,11,.45)' : 'rgba(255,255,255,.12)';
+      el.style.background    = type==='ok' ? 'rgba(34,197,94,.12)' : type==='warn' ? 'rgba(245,158,11,.12)' : 'rgba(0,0,0,.15)';
+    }
+
+    // ------ Envío del formulario ------
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('form-nueva-vaca');
+      const btnGuardar = document.getElementById('btn-guardar');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (rol !== 'propietario') {
+          feedback('Solo el PROPIETARIO puede crear vacas. Cierra sesión e inicia como propietario.', 'warn');
+          return;
+        }
+
+        const payload = {
+          numero: document.getElementById('nueva-numero').value.trim(),
+          nombre: document.getElementById('nueva-nombre').value.trim(),
+          numero_pierna: document.getElementById('nueva-numero-pierna').value.trim(),
+          raza: document.getElementById('nueva-raza').value.trim(),
+          status: document.getElementById('nueva-status').value.trim()
+        };
+
+        if (!payload.numero || !payload.nombre) {
+          feedback('El Número SINIIGA y el Nombre son obligatorios.', 'warn');
+          return;
+        }
+
+        btnGuardar.setAttribute('disabled','true');
+        btnGuardar.textContent = 'Guardando...';
+
+        try {
+          // *** RUTA CORRECTA DEL BACKEND ***
+          const r = await fetch('/api/vacas', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const text = await r.text();
+          let data = {};
+          try { data = JSON.parse(text); } catch {}
+
+          if (r.status === 401) {
+            localStorage.clear(); sessionStorage.clear();
+            throw new Error('Tu sesión expiró. Vuelve a iniciar sesión.');
+          }
+          if (r.status === 403) throw new Error('Solo el PROPIETARIO puede crear vacas.');
+          if (r.status === 409) throw new Error(data.error || 'Ya existe una vaca con ese SINIIGA en tu rancho.');
+          if (!r.ok)           throw new Error(data.error || 'No se pudo crear la vaca.');
+
+          if (!data || !data.id) {
+            console.warn('Respuesta del servidor al crear vaca:', data);
+          }
+
+          feedback('✅ Vaca añadida correctamente. Redirigiendo…', 'ok');
+          setTimeout(() => location.href = './propietario-vacas.html', 600);
+
+        } catch (err) {
+          feedback('❌ ' + err.message, 'warn');
+          btnGuardar.removeAttribute('disabled');
+          btnGuardar.textContent = 'Guardar Vaca';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

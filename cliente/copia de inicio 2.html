@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="icon" href="./assets/favicon.ico" type="image/x-icon">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienvenido a Ganadería Inteligente JFB</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="./css/estilos.css" />
+
+  <!-- Preload del video -->
+  <link rel="preload" as="video" href="./assets/background-video.mp4">
+</head>
+<body class="welcome-body">
+
+  <!-- Video de fondo -->
+  <div class="video-background">
+    <video autoplay muted loop playsinline id="bg-video">
+      <source src="./assets/background-video.mp4" type="video/mp4" />
+    </video>
+  </div>
+
+  <!-- Portada -->
+  <div class="welcome-container">
+    <div class="logo-area">
+      <img src="./assets/logo.png" alt="JFB Ganadería Inteligente" class="main-logo" />
+    </div>
+
+    <p class="welcome-title">Bienvenido a JFB Ganadería Inteligente</p>
+    <div class="welcome-divider"></div>
+
+    <div class="btn-row">
+      <a href="./auth.html?rol=propietario" class="welcome-button">👨‍🌾 Soy Propietario</a>
+      <a href="./auth.html?rol=mvz" class="welcome-button">🩺 Soy MVZ</a>
+    </div>
+  </div>
+</body>
+</html>

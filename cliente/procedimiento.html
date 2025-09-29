@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sesión de Procedimiento - Ganadería JFB</title>
+
+  <!-- Rutas consistentes con /cliente -->
+  <link rel="stylesheet" href="./css/estilos.css" />
+  <link rel="icon" href="/assets/favicon.ico" />
+
+  <!-- jsPDF (si tu procedimiento.js lo usa para el modo manual) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Config de campos + lógica de la página -->
+  <script src="./procedimientos-config-y-formulario.js" defer></script>
+  <script src="./procedimiento.js" defer></script>
+</head>
+<body>
+
+  <!-- Fondo animado consistente -->
+  <div class="background-wrapper">
+    <div class="particles p1"></div>
+    <div class="particles p2"></div>
+    <div class="particles p3"></div>
+  </div>
+
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/assets/logo.png" alt="Logo JFB" />
+      <span>JFB Ganadería Inteligente</span>
+    </div>
+    <div class="header-nav">
+      <button id="btn-back" class="btn-ghost" type="button">Atrás</button>
+      <button id="btn-logout" class="boton-logout" type="button">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- Título dinámico (lo llena procedimiento.js con ?tipo=...) -->
+    <section class="dashboard-panel">
+      <h1 id="procedimiento-titulo">Sesión</h1>
+      <p class="mini-note">Selecciona o busca una vaca y completa el formulario del procedimiento.</p>
+    </section>
+
+    <!-- Búsqueda de vaca -->
+    <section id="seccion-busqueda" class="dashboard-panel" style="display:none;">
+      <h2>Buscar Vaca</h2>
+
+      <div class="form-group">
+        <label for="tipo-busqueda">Buscar por:</label>
+        <select id="tipo-busqueda">
+          <option value="numero_siniiga">Arete SINIIGA</option>
+          <option value="numero_pierna">Número de Pierna</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="valor-busqueda">Valor:</label>
+        <input id="valor-busqueda" type="text" placeholder="Escribe 3+ caracteres…" />
+      </div>
+
+      <div id="vaca-encontrada-detalles" class="rancho-item-placeholder hidden"></div>
+    </section>
+
+    <!-- Mostrar solo si no hay rancho en sessionStorage -->
+<section id="seccion-rancho-manual" class="card" style="display:none;">
+  <h2>Datos de la Sesión</h2>
+  <div class="form-grid">
+    <div class="campo">
+      <label for="rancho-manual">Nombre del Rancho *</label>
+      <input id="rancho-manual" type="text" placeholder="Ej. Rancho Montana" />
+      <small id="rancho-manual-hint" style="opacity:.75">
+        Se guardará para toda la sesión.
+      </small>
+    </div>
+  </div>
+</section>
+
+
+    <!-- Formulario del procedimiento (dinámico) -->
+    <section id="seccion-formulario-procedimiento" class="dashboard-panel">
+      <h2>Formulario</h2>
+      <div id="campos-dinamicos" class="form-grid"></div>
+
+      <div class="form-group" style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
+        <!-- Mantengo los IDs; solo uso .btn para el estilo -->
+        <button id="btn-agregar"   class="btn" type="button">➕ Añadir a la Sesión</button>
+        <button id="btn-finalizar" class="btn" type="button">Finalizar y Descargar PDF</button>
+      </div>
+    </section>
+
+    <!-- Tabla de la sesión actual -->
+    <section class="dashboard-panel">
+      <h2>Registros en esta Sesión</h2>
+      <div id="tabla-sesion"></div>
+    </section>
+  </main>
+
+</body>
+</html>

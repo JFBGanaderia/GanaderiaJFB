@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acceso — JFB Ganadería</title>
+  <link rel="stylesheet" href="./css/estilos.css"/>
+  <link rel="icon" href="/assets/favicon.ico"/>
+  <style>
+    .auth-card{max-width:560px;margin:80px auto 24px auto}
+    .tabs{display:flex;gap:8px;border-bottom:1px solid var(--card-border);margin-bottom:16px}
+    .tabs button{background:none;border:none;padding:10px 14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+    .tabs button.active{color:var(--text);border-color:var(--accent)}
+  </style>
+</head>
+<body>
+  <div class="background-wrapper">
+    <div class="particles p1"></div>
+    <div class="particles p2"></div>
+    <div class="particles p3"></div>
+  </div>
+
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/assets/logo.png" alt="Logo JFB"/>
+      <span>JFB Ganadería Inteligente</span>
+    </div>
+    <nav class="header-nav">
+      <a class="btn" href="./index.html">🏠 Inicio</a>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <section class="dashboard-panel auth-card">
+      <h1>Acceso</h1>
+      <p class="mini-note">Inicia sesión o regístrate. Usa el selector de rol si es necesario.</p>
+
+      <div class="tabs-container" id="auth-tabs">
+  <button class="tab active" data-tab="login">Iniciar Sesión</button>
+  <button class="tab" data-tab="register">Registrarme</button>
+</div>
+
+<!-- ====== LOGIN ====== -->
+<form id="form-login" class="form-grid">
+  <div class="campo">
+    <label for="log-email">Email</label>
+    <input id="log-email" type="email" placeholder="tu@correo.com" required>
+  </div>
+  <div class="campo">
+    <label for="log-pass">Contraseña</label>
+    <input id="log-pass" type="password" placeholder="••••••••" required>
+  </div>
+  <div class="campo full center" style="margin-top:8px;">
+    <button type="submit" class="welcome-button">Entrar</button>
+  </div>
+</form>
+
+<!-- ====== REGISTRO (solo propietarios) ====== -->
+<form id="form-register" class="form-grid hidden">
+  <div class="campo">
+    <label for="reg-nombre">Nombre</label>
+    <input id="reg-nombre" type="text" placeholder="Tu nombre" required>
+  </div>
+  <div class="campo">
+    <label for="reg-rancho">Nombre del rancho</label>
+    <input id="reg-rancho" type="text" placeholder="Ej. Rancho El Roble">
+  </div>
+  <div class="campo">
+    <label for="reg-email">Email</label>
+    <input id="reg-email" type="email" placeholder="tu@correo.com" required>
+  </div>
+  <div class="campo">
+    <label for="reg-pass">Contraseña</label>
+    <input id="reg-pass" type="password" placeholder="••••••••" required>
+  </div>
+  <div class="campo full center" style="margin-top:8px;">
+    <button type="submit" class="welcome-button">Crear cuenta</button>
+  </div>
+</form>
+
+
+      <div id="auth-feedback" class="rancho-item-placeholder hidden" style="margin-top:10px;"></div>
+    </section>
+  </main>
+
+  <script src="./auth.js" defer></script>
+</body>
+</html>

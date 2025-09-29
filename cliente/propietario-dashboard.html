@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Propietario - Ganadería JFB</title>
+  <link rel="stylesheet" href="./css/estilos.css" />
+  <link rel="icon" href="/assets/favicon.ico" />
+</head>
+<body>
+  <!-- Fondo animado -->
+  <div class="background-wrapper">
+    <div class="particles p1"></div>
+    <div class="particles p2"></div>
+    <div class="particles p3"></div>
+  </div>
+
+  <!-- Header unificado -->
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/assets/logo.png" alt="Logo JFB" />
+      <span>JFB Ganadería Inteligente</span>
+    </div>
+    <nav class="header-nav">
+      <a href="./index.html" class="btn">🏠 Inicio</a>
+      <button id="boton-logout" class="boton-logout" type="button">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <!-- Contenido -->
+  <main class="dashboard-container">
+    <!-- Tu Rancho -->
+    <section class="dashboard-panel">
+      <h1>Panel de Control — Propietario</h1>
+      <p class="mini-note">Comparte el código con tu MVZ para que pueda registrar procedimientos en tu rancho.</p>
+    </section>
+
+    <section class="dashboard-panel">
+      <h2>Tu Rancho</h2>
+      <p><strong>Nombre:</strong> <span id="rancho-nombre">Cargando…</span></p>
+
+      <p class="rancho-codigo-wrapper" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <strong>Código de Acceso (para tu MVZ):</strong>
+        <strong id="rancho-codigo">Cargando…</strong>
+        <button id="btn-copiar-codigo" class="btn" type="button">📋 Copiar</button>
+      </p>
+    </section>
+
+    <!-- Acciones -->
+    <section class="dashboard-panel">
+      <h2>Acciones</h2>
+      <div class="action-list">
+        <!-- Corrijo el path para coincidir con tu archivo con “ñ” -->
+        <a href="./propietario-anadir.html" class="action-link"><span>➕ Añadir Vacas</span></a>
+        <a href="./propietario-vacas.html" class="action-link"><span>🐄 Mis Vacas</span></a>
+      </div>
+    </section>
+
+    <section class="dashboard-panel" style="text-align:center;">
+      <p class="mini-note">JFB Ganadería Inteligente © 2025</p>
+    </section>
+  </main>
+
+  <script src="./propietario-dashboard.js" defer></script>
+</body>
+</html>
