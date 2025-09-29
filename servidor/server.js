@@ -6,42 +6,61 @@ const fs = require('fs');
 const http = require('http');
 const jwt = require('jsonwebtoken');
 
-const knexConfig = require('../knexfile').development;
+const knexConfig = require('../knexfile').development; // ajusta si usas producción
 const knex = require('knex')(knexConfig);
 
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-
 const PDFDocument = require('pdfkit');
 
 // ================== App + Configuración ==================
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Usa la misma clave en todo el archivo (login/verify)
 
-// DESPUÉS (cómo debe quedar)
-const JWT_SECRET = process.env.JWT_SECRET;
+// JWT secret (usa variable en producción; fallback local para pruebas)
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-solo-local-cámbialo';
 
-app.use(cors());
+// JSON parser
 app.use(express.json());
 
-// Sirve /assets desde /Ganaderia_JFB/assets (o ../assets según tu estructura)
+// CORS: permite llamadas desde tu hosting de Firebase
+app.use(
+  cors({
+    origin: [
+      'https://jfb-ganaderia.web.app',        // <-- CAMBIA por tu URL real de Firebase
+      'https://jfb-ganaderia.firebaseapp.com' // <-- CAMBIA por tu URL real de Firebase
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false
+  })
+);
+
+// (Opcional) servir /assets del repo
 app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
-// ================== Servir Archivos del Cliente ==================
-app.use(express.static(path.join(__dirname, '..', 'cliente'), { extensions: ['html'] }));
-app.use('/cliente', express.static(path.join(__dirname, '..', 'cliente'), { extensions: ['html'] }));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'cliente', 'index.html'));
-});
+// (Opcional/local) servir frontend si corres todo junto en local.
+// En producción (Firebase + Render) NO es necesario.
+if (process.env.SERVE_CLIENT === '1') {
+  app.use(
+    express.static(path.join(__dirname, '..', 'cliente'), { extensions: ['html'] })
+  );
+  app.use(
+    '/cliente',
+    express.static(path.join(__dirname, '..', 'cliente'), { extensions: ['html'] })
+  );
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'cliente', 'index.html'));
+  });
+}
 
-// =================================================================
-// ===       MIDDLEWARE DE AUTENTICACIÓN (PROTEGER RUTA)         ===
-// =================================================================
+// ================== Middleware de Autenticación ==================
 function protegerRuta(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Acceso no autorizado, token no proporcionado.' });
+    return res
+      .status(401)
+      .json({ error: 'Acceso no autorizado, token no proporcionado.' });
   }
   const token = authHeader.split(' ')[1];
   try {
@@ -75,26 +94,67 @@ function normalizaTipo(tipo = '') {
   return MAP_TIPOS[t] || tipo;
 }
 
-// ================== RUTAS DE LA API ==================
+// ================== Rutas de AUTH ==================
 
-// --- Autenticación ---
-// --- Autenticación ---
-app.post('/api/register', async (req, res) => {
+// LOGIN (añadido)
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password, rolPreferido } = req.body || {};
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: 'Email y contraseña son requeridos.' });
+    }
+
+    const usuario = await knex('usuarios').where({ email }).first();
+    if (!usuario) {
+      return res.status(401).json({ error: 'Credenciales inválidas.' });
+    }
+
+    const ok = await bcrypt.compare(password, usuario.password);
+    if (!ok) {
+      return res.status(401).json({ error: 'Credenciales inválidas.' });
+    }
+
+    // Si quieres aceptar rolPreferido solo si coincide con el de DB, usa el de DB.
+    const token = jwt.sign(
+      { id: usuario.id, rol: usuario.rol },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({
+      token,
+      usuario: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol
+      }
+    });
+  } catch (error) {
+    console.error('Error en /api/auth/login:', error);
+    res.status(500).json({ error: 'Error interno al iniciar sesión.' });
+  }
+});
+
+// REGISTER (tu ruta, pero en /api/auth/register; dejo alias viejo)
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { nombre, email, password, rancho_nombre } = req.body;
 
     if (!nombre || !email || !password) {
-      return res.status(400).json({ error: 'Nombre, email y contraseña son requeridos.' });
+      return res
+        .status(400)
+        .json({ error: 'Nombre, email y contraseña son requeridos.' });
     }
 
     const existente = await knex('usuarios').where({ email }).first();
     if (existente) {
-      return res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+      return res.status(409).json({ error: 'El correo ya está registrado.' });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-
-    // Por defecto, todo registro desde este formulario será PROPIETARIO
     const rol = 'propietario';
 
     const [id] = await knex('usuarios').insert({
@@ -106,11 +166,11 @@ app.post('/api/register', async (req, res) => {
 
     const usuario = await knex('usuarios').where({ id }).first();
 
-    // Si es propietario, crea su rancho (nombre provisto o por defecto)
     if (usuario.rol === 'propietario') {
-      const nombreRancho = (rancho_nombre && rancho_nombre.trim())
-        ? rancho_nombre.trim()
-        : `Rancho de ${usuario.nombre}`;
+      const nombreRancho =
+        rancho_nombre && rancho_nombre.trim()
+          ? rancho_nombre.trim()
+          : `Rancho de ${usuario.nombre}`;
 
       await knex('ranchos').insert({
         nombre: nombreRancho,
@@ -122,7 +182,7 @@ app.post('/api/register', async (req, res) => {
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },
       JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '8h' }
     );
 
     res.status(201).json({
@@ -133,19 +193,30 @@ app.post('/api/register', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error('Error en /api/register:', error);
+    console.error('Error en /api/auth/register:', error);
     res.status(500).json({ error: 'Error al registrar el usuario.' });
   }
 });
 
+// Alias para compatibilidad con tu front previo:
+app.post('/api/register', (req, res, next) => {
+  req.url = '/api/auth/register';
+  next();
+});
 
-// --- Rutas de Propietario y Vacas ---
+// ================== Rutas de Propietario y Vacas ==================
 app.get('/api/mi-rancho', protegerRuta, async (req, res) => {
-  if (req.usuario.rol !== 'propietario') return res.status(403).json({ error: 'Acción no permitida.' });
+  if (req.usuario.rol !== 'propietario')
+    return res.status(403).json({ error: 'Acción no permitida.' });
   try {
-    const rancho = await knex('ranchos').where({ propietario_id: req.usuario.id }).first();
+    const rancho = await knex('ranchos')
+      .where({ propietario_id: req.usuario.id })
+      .first();
     if (rancho) res.json(rancho);
-    else res.status(404).json({ error: 'No se encontró un rancho para este propietario.' });
+    else
+      res
+        .status(404)
+        .json({ error: 'No se encontró un rancho para este propietario.' });
   } catch (error) {
     console.error('Error /api/mi-rancho:', error);
     res.status(500).json({ error: 'Error al obtener la información del rancho.' });
@@ -154,7 +225,9 @@ app.get('/api/mi-rancho', protegerRuta, async (req, res) => {
 
 app.get('/api/vacas', protegerRuta, async (req, res) => {
   try {
-    const rancho = await knex('ranchos').where({ propietario_id: req.usuario.id }).first();
+    const rancho = await knex('ranchos')
+      .where({ propietario_id: req.usuario.id })
+      .first();
     if (!rancho) return res.json([]);
     const vacas = await knex('vacas').where({ rancho_id: rancho.id });
     res.json(vacas);
@@ -165,25 +238,40 @@ app.get('/api/vacas', protegerRuta, async (req, res) => {
 });
 
 app.post('/api/vacas', protegerRuta, async (req, res) => {
-  if (req.usuario.rol !== 'propietario') return res.status(403).json({ error: 'Acción no permitida.' });
+  if (req.usuario.rol !== 'propietario')
+    return res.status(403).json({ error: 'Acción no permitida.' });
+
   const { numero, nombre, raza, status, numero_pierna } = req.body;
   try {
-    const rancho = await knex('ranchos').where({ propietario_id: req.usuario.id }).first();
-    if (!rancho) return res.status(403).json({ error: 'Usuario no tiene un rancho asignado.' });
+    const rancho = await knex('ranchos')
+      .where({ propietario_id: req.usuario.id })
+      .first();
+    if (!rancho)
+      return res
+        .status(403)
+        .json({ error: 'Usuario no tiene un rancho asignado.' });
 
-    const [id] = await knex('vacas').insert({ numero, nombre, raza, status, numero_pierna, rancho_id: rancho.id });
+    const [id] = await knex('vacas').insert({
+      numero,
+      nombre,
+      raza,
+      status,
+      numero_pierna,
+      rancho_id: rancho.id
+    });
     const nuevaVaca = await knex('vacas').where({ id }).first();
     res.status(201).json(nuevaVaca);
   } catch (error) {
     if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return res.status(409).json({ error: `Ya existe una vaca con el número SINIIGA ${numero}.` });
+      return res
+        .status(409)
+        .json({ error: `Ya existe una vaca con el número SINIIGA ${numero}.` });
     }
     console.error('Error POST /api/vacas:', error);
     res.status(500).json({ error: 'Error al añadir la vaca.' });
   }
 });
 
-// --- Ruta para ELIMINAR una vaca ---
 app.delete('/api/vacas/:id', protegerRuta, async (req, res) => {
   const { id } = req.params;
   const propietario_id = req.usuario.id;
@@ -191,8 +279,13 @@ app.delete('/api/vacas/:id', protegerRuta, async (req, res) => {
     const vaca = await knex('vacas').where({ id }).first();
     if (!vaca) return res.status(404).json({ error: 'Vaca no encontrada.' });
 
-    const rancho = await knex('ranchos').where({ id: vaca.rancho_id, propietario_id }).first();
-    if (!rancho) return res.status(403).json({ error: 'No tienes permiso para eliminar esta vaca.' });
+    const rancho = await knex('ranchos')
+      .where({ id: vaca.rancho_id, propietario_id })
+      .first();
+    if (!rancho)
+      return res
+        .status(403)
+        .json({ error: 'No tienes permiso para eliminar esta vaca.' });
 
     await knex('vacas').where({ id }).del();
     res.status(204).send();
@@ -202,8 +295,7 @@ app.delete('/api/vacas/:id', protegerRuta, async (req, res) => {
   }
 });
 
-// --- Rutas de MVZ ---
-// POST /api/acceder-rancho
+// ================== Rutas de MVZ ==================
 app.post('/api/acceder-rancho', protegerRuta, async (req, res) => {
   if (req.usuario.rol !== 'mvz') {
     return res.status(403).json({ error: 'Acción solo para veterinarios.' });
@@ -216,20 +308,18 @@ app.post('/api/acceder-rancho', protegerRuta, async (req, res) => {
   }
 
   try {
-    // Si los guardas en minúsculas, descomenta:
-    // codigo_acceso = codigo_acceso.toLowerCase();
-
     const rancho = await knex('ranchos').where({ codigo_acceso }).first();
     if (!rancho) return res.status(404).json({ error: 'Rancho no encontrado.' });
 
-    return res.json({ rancho: { id: rancho.id, nombre: rancho.nombre, codigo_acceso: rancho.codigo_acceso } });
+    return res.json({
+      rancho: { id: rancho.id, nombre: rancho.nombre, codigo_acceso: rancho.codigo_acceso }
+    });
   } catch (error) {
     console.error('Error /api/acceder-rancho:', error);
     return res.status(500).json({ error: 'Error al acceder al rancho.' });
   }
 });
 
-// GET /api/rancho/:ranchoId/buscar-vaca
 app.get('/api/rancho/:ranchoId/buscar-vaca', protegerRuta, async (req, res) => {
   if (req.usuario.rol !== 'mvz') {
     return res.status(403).json({ error: 'Acción solo para veterinarios.' });
@@ -239,22 +329,33 @@ app.get('/api/rancho/:ranchoId/buscar-vaca', protegerRuta, async (req, res) => {
   const { numero_siniiga = '', numero_pierna = '' } = req.query;
 
   const qSiniiga = String(numero_siniiga).trim();
-  const qPierna  = String(numero_pierna).trim();
+  const qPierna = String(numero_pierna).trim();
 
   if (!qSiniiga && !qPierna) {
-    return res.status(400).json({ error: 'Se necesita número SINIIGA o número de pierna.' });
+    return res
+      .status(400)
+      .json({ error: 'Se necesita número SINIIGA o número de pierna.' });
   }
   if ((qSiniiga && qSiniiga.length < 3) || (qPierna && qPierna.length < 3)) {
-    return res.status(400).json({ error: 'Escribe al menos 3 caracteres para buscar.' });
+    return res
+      .status(400)
+      .json({ error: 'Escribe al menos 3 caracteres para buscar.' });
   }
 
   try {
     let query = knex('vacas').where({ rancho_id: ranchoId });
 
     if (qSiniiga) query = query.where('numero', 'like', `%${qSiniiga}%`);
-    if (qPierna)  query = query.where('numero_pierna', 'like', `%${qPierna}%`);
+    if (qPierna) query = query.where('numero_pierna', 'like', `%${qPierna}%`);
 
-    const vacas = await query.select('id','numero','numero_pierna','nombre','raza','status');
+    const vacas = await query.select(
+      'id',
+      'numero',
+      'numero_pierna',
+      'nombre',
+      'raza',
+      'status'
+    );
     return res.json(vacas);
   } catch (error) {
     console.error('Error GET /api/rancho/:ranchoId/buscar-vaca:', error);
@@ -262,8 +363,7 @@ app.get('/api/rancho/:ranchoId/buscar-vaca', protegerRuta, async (req, res) => {
   }
 });
 
-
-// --- Config PDF por tipo ---
+// ================== Config PDF por tipo ==================
 const PDF_CONFIG = {
   'palpación': {
     campos: ['estatica', 'gestante', 'ciclando', 'sucia', 'gestante_detalle', 'ciclando_detalle', 'observaciones'],
@@ -322,11 +422,13 @@ const PDF_CONFIG = {
   }
 };
 
-// ================== HISTORIAL (fuera de /finalizar) ==================
+// ================== HISTORIAL ==================
 app.get('/api/vacas/:id/historial', protegerRuta, async (req, res) => {
   const { id } = req.params;
   try {
-    const historial = await knex('eventos').where({ vaca_id: id }).orderBy('fecha_evento', 'desc');
+    const historial = await knex('eventos')
+      .where({ vaca_id: id })
+      .orderBy('fecha_evento', 'desc');
     res.json(historial);
   } catch (error) {
     console.error(`Error al obtener el historial de la vaca ${id}:`, error);
@@ -334,14 +436,14 @@ app.get('/api/vacas/:id/historial', protegerRuta, async (req, res) => {
   }
 });
 
-// --- RUTA DE PROCEDIMIENTOS Y PDF ---
+// ================== Procedimientos + PDF ==================
 app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
   const { ranchoId, tipo, resultados, ranchoNombreManual } = req.body;
   const mvz_id = req.usuario.id;
   const tipoNormalizado = normalizaTipo(tipo);
 
   try {
-    // ===== Persistencia solo si hay ranchoId (igual que antes) =====
+    // Persistencia
     if (ranchoId && (resultados || []).length > 0) {
       await knex.transaction(async (trx) => {
         const [idProcedimiento] = await trx('procedimientos').insert({
@@ -370,7 +472,7 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
       });
     }
 
-    // ===== Encabezado: rancho y propietario =====
+    // Encabezado PDF
     let rancho, propietario;
     const mvz = await knex('usuarios').where({ id: mvz_id }).first();
 
@@ -384,13 +486,10 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
         propietario = await knex('usuarios').where({ id: rancho.propietario_id }).first();
         propietarioNombreHeader = propietario?.nombre || 'N/A';
       }
-    } else {
-      if (ranchoNombreManual && ranchoNombreManual.trim()) {
-        ranchoNombreHeader = `${ranchoNombreManual.trim()} (Manual)`;
-      }
+    } else if (ranchoNombreManual && ranchoNombreManual.trim()) {
+      ranchoNombreHeader = `${ranchoNombreManual.trim()} (Manual)`;
     }
 
-    // ===== PDF =====
     const doc = new PDFDocument({ size: 'LETTER', margin: 40 });
     const nombreArchivo = `reporte_final.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
@@ -416,9 +515,8 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
     doc.fill('#E1E1E1').font('Helvetica-Bold').fontSize(14)
       .text(`INFORME DE ${tipoNormalizado.toUpperCase()}`, 0, yBarra + 7, { align: 'center' });
     doc.moveDown(2);
-    doc.fillColor('black'); // reset
+    doc.fillColor('black');
 
-    // Helpers
     const drawHighlightedText = (label, value, x, y, highlight = false) => {
       const texto = `${label}${value ?? '-'}`;
       if (highlight) {
@@ -431,7 +529,6 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
 
     const conf = PDF_CONFIG[tipoNormalizado] || PDF_CONFIG['palpación'];
 
-    // ===== Cuerpo por vaca =====
     (resultados || []).forEach((item, idx) => {
       const r = item.resultado || {};
       doc.fillColor('black').font('Helvetica-Bold').fontSize(11)
@@ -443,17 +540,12 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
       let y = doc.y;
 
       if (tipoNormalizado.toLowerCase() === 'palpación' || tipoNormalizado.toLowerCase() === 'palpacion') {
-        // ==== Maquetado especial para Palpación en TRES COLUMNAS ====
         const col1 = 40, col2 = 220, col3 = 400;
-
-        // --- Fila 1 ---
         drawHighlightedText('Estática: ', r.estatica || '-', col1, y);
         drawHighlightedText('Gestante: ', r.gestante || '-', col2, y, String(r.gestante).toLowerCase() === 'sí');
         drawHighlightedText('Ciclando: ', r.ciclando || '-', col3, y, String(r.ciclando).toLowerCase() === 'sí');
-        
-        y += lh; // Siguiente línea
+        y += lh;
 
-        // --- Fila 2 ---
         drawHighlightedText('Sucia: ', r.sucia || '-', col1, y);
         if (String(r.gestante).toLowerCase() === 'sí') {
           drawHighlightedText('Edad Gestacional: ', r.gestante_detalle || '-', col2, y);
@@ -462,13 +554,10 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
           drawHighlightedText('Detalle Ciclo: ', r.ciclando_detalle || '-', col3, y);
         }
 
-        // --- Observaciones (ocupa todo el ancho) ---
         doc.moveDown(2);
         doc.font('Helvetica-Bold').text('Observaciones: ', 40, doc.y, { continued: true });
         doc.font('Helvetica').text(r.observaciones || 'Ninguna.', { width: doc.page.width - 80 });
-
       } else {
-        // ==== Fallback genérico (dos columnas, ocultando detalles si no aplica) ====
         const col1 = 40, col2 = 300;
         const camposFiltrados = (conf.campos || []).filter((campo) => {
           if (campo === 'gestante_detalle' && (r.gestante !== 'Sí' && r.gestante !== 'sí')) return false;
@@ -497,12 +586,10 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
         }
       }
 
-      // Separador
       doc.strokeColor('#001F3D').lineWidth(0.5)
         .moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke();
       doc.moveDown(1.2);
 
-      // Salto de página si hace falta
       if (doc.y > doc.page.height - 100 && idx < (resultados.length - 1)) {
         doc.addPage();
       }
@@ -517,6 +604,10 @@ app.post('/api/procedimientos/finalizar', protegerRuta, async (req, res) => {
   }
 });
 
+// ================== Salud ==================
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() });
+});
 
 // ================== Iniciar Servidor ==================
 const server = http.createServer(app);
