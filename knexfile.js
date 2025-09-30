@@ -1,21 +1,18 @@
-require('dotenv').config();
+const path = require('path');
 
 module.exports = {
   development: {
     client: 'sqlite3',
-    connection: { filename: './data/database.db' },
-    migrations: { directory: './database/migrations' },
-    useNullAsDefault: true,
+    connection: {
+      filename: path.join(__dirname, 'database', 'data.sqlite3')
+    },
+    useNullAsDefault: true
   },
-
   production: {
-  client: 'pg',
-  connection: {
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-  },
-  pool: { min: 2, max: 10 },
-  migrations: { directory: './database/migrations' },
-}
-
+    client: 'sqlite3',
+    connection: {
+      filename: path.join(__dirname, 'database', 'data.sqlite3')
+    },
+    useNullAsDefault: true
+  }
 };
